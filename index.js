@@ -1,13 +1,39 @@
+require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const app = express();
 const cors = require("cors");
+const mongoose = require("mongoose");
+const Person = require("./models/person");
 
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(morgan(":method :url :status :response-time ms - :body"));
 app.use(express.json());
 app.use(cors());
 app.use(express.static("build"));
+
+/* const url = `mongodb+srv://user1:user1@cluster0.kqkzi.mongodb.net/phonebook?retryWrites=true&w=majority`;
+
+mongoose.connect(url, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  useFindAndModify: false,
+  useCreateIndex: true,
+});
+
+const personSchema = new mongoose.Schema({
+  name: String,
+  number: String,
+});
+
+personSchema.set("toJSON", {
+  transform: (document, returnedObject) => {
+    returnedObject.id = returnedObject._id.toString();
+    delete returnedObject._id;
+    delete returnedObject.__v;
+  },
+}); */
+
 let persons = [
   {
     id: 1,
@@ -37,8 +63,9 @@ const generateId = () => {
 };
 
 app.get("/api/persons", (req, res) => {
-  res.json(persons);
-  console.log(persons.length);
+  Person.find({}).then((persons) => {
+    res.json(persons);
+  });
 });
 
 app.get("/api/info", (req, res) => {
@@ -100,7 +127,7 @@ app.post("/api/persons", (req, res) => {
   res.json(person);
 });
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`server is running on port ${PORT}`);
 });
