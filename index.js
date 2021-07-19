@@ -3,8 +3,8 @@ const express = require("express");
 const morgan = require("morgan");
 const app = express();
 const cors = require("cors");
-const mongoose = require("mongoose");
 const Person = require("./models/person");
+const { response } = require("express");
 
 morgan.token("body", (req, res) => JSON.stringify(req.body));
 app.use(morgan(":method :url :status :response-time ms - :body"));
@@ -53,16 +53,20 @@ app.get("/api/info", (req, res) => {
   console.log(date);
 });
 
-app.get("/api/persons/:id", (req, res) => {
-  Person.findById(req.params.id).then((person) => {
-    res.json(person);
-  });
-
-  /*   if (person) {
-    res.json(person);
-  } else {
-    res.status(404).end();
-  } */
+app.get("/api/persons/:id", (request, response) => {
+  Person.findById(request.params.id)
+    .then((person) => {
+      response.json(person).then((person) => {});
+      if (person) {
+        response.json(person);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+      response.status(400).send({ error: "malformatted id" });
+    });
 });
 
 app.delete("/api/persons/:id", (req, res) => {
