@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static("build"));
 
-let persons = [
+/* let persons = [
   {
     id: 1,
     name: "Arto Hellas",
@@ -32,7 +32,7 @@ let persons = [
     name: "Mary Poppendick",
     number: "39-23-6423122",
   },
-];
+]; */
 
 app.get("/api/persons", (req, res) => {
   Person.find({}).then((persons) => {
@@ -42,8 +42,10 @@ app.get("/api/persons", (req, res) => {
 
 app.get("/api/info", (req, res) => {
   const date = new Date();
-  res.send(`<p>Phonebook has info for ${length} people<br> ${date}</p>`);
-  console.log(date);
+  Person.find().exec(function (err, results) {
+    const people = results.length;
+    res.send(`<p>Phonebook has info for ${people} people<br> ${date}</p>`);
+  });
 });
 
 app.get("/api/persons/:id", (request, response, next) => {
