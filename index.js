@@ -68,7 +68,7 @@ app.delete("/api/persons/:id", (req, res, next) => {
     .catch((error) => next(error));
 });
 
-app.post("/api/persons", (req, res) => {
+app.post("/api/persons", (req, res, next) => {
   const body = req.body;
 
   if (body.name === undefined) {
@@ -77,23 +77,17 @@ app.post("/api/persons", (req, res) => {
     });
   }
 
-  /*   if (
-    persons
-      .map((person) => person.name.toLocaleLowerCase())
-      .includes(body.name.toLocaleLowerCase())
-  ) {
-    return res.status(400).json({
-      error: "the name was already found in the database",
-    });
-  } */
-
   const person = new Person({
     name: body.name,
     number: body.number,
   });
-  person.save().then((savedPerson) => {
-    res.json(savedPerson);
-  });
+  person
+    .save()
+    .then((savedPerson) => savedPerson.toJSON())
+    .then((savedAndFormattedPerson) => {
+      res.json(savedAndFormattedPerson);
+    })
+    .catch((error) => next(error));
 });
 
 app.put("/api/persons/:id", (request, response, next) => {
@@ -125,6 +119,8 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === "CastError") {
     return response.status(400).send({ error: "malformatted id" });
+  } else if (error.name === "ValidationError") {
+    return response.status(400).json({ error: error.message });
   }
 
   next(error);
